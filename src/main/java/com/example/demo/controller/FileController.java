@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ import java.nio.file.Files;
 public class FileController {
 
     // ZIP file path
-    private static final String FILE_PATH = "D:\\workspace\\http-etag-demo\\src\\main\\resources\\test.zip";
+    private static final String FILE_NAME = "test.zip";
 
     @GetMapping("/file")
     @Operation(summary = "Download ZIP file", description = "Returns ZIP file content and supports ETag caching. If the client provides If-None-Match and it matches, returns 304 Not Modified.")
@@ -51,7 +52,13 @@ public class FileController {
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch
     ) throws Exception {
 
-        File file = new File(FILE_PATH);
+        ClassPathResource resource = new ClassPathResource(FILE_NAME);
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        File file = resource.getFile();
 
         if (!file.exists()) {
             return ResponseEntity.notFound().build();
